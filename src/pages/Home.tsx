@@ -2,10 +2,10 @@ import { useEffect, useState } from "react";
 import { Link } from "react-router-dom";
 
 export default function Home() {
-  const [gameID, setGameID] = useState("");
+  const [gameID, setGameID] = useState(0);
 
   useEffect(() => {
-    setGameID((+new Date()).toString(36)); // "iepii89m"
+    setGameID(+new Date());
     console.log({ gameID });
   }, []);
 
@@ -13,7 +13,7 @@ export default function Home() {
     <div>
       <h1>Home</h1>
       <Link to={"/"}>Home</Link>
-      <Link to={`/${gameID}`}>New Game</Link>
+      <Link to={{ pathname: `/${gameID.toString(36)}` }}>New Game</Link>
     </div>
   );
 }
