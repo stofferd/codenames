@@ -6,7 +6,6 @@ export default function Home() {
 
   useEffect(() => {
     setGameID(+new Date());
-    console.log({ gameID });
   }, []);
 
   return (

@@ -16,7 +16,6 @@ type Props = {
 };
 
 export default function WordGrid({ agents, words }: Props) {
-  console.log({ agents });
   return (
     <Grid>
       {words.map((word: string, index: number) => (
