@@ -1,15 +1,28 @@
 import React, { useCallback, useEffect } from "react";
 import { Link, useLocation } from "react-router-dom";
 import io from "socket.io-client";
+import styled from "styled-components";
 import generateAgents from "../lib/generateAgents";
 import generateWords from "../lib/generateWords";
+import GuideGrid from "./GuideGrid";
+import Spinner from "./Spinner";
 import WordGrid from "./WordGrid";
+
+const Header = styled.div`
+  height: 180px;
+`;
+
+export type Guess = {
+  answer: string;
+  playerIndex: number;
+};
 
 export default function Game() {
   const location = useLocation();
-  const [gameStarted, setGameStarted] = React.useState(false);
+  const [loading, setLoading] = React.useState<boolean>(false);
+  const [gameStarted, setGameStarted] = React.useState<boolean>(false);
   const [myTurn, setMyTurn] = React.useState<boolean>(false);
-  const [guesses, _setGuesses] = React.useState<string[]>([]);
+  const [guesses, _setGuesses] = React.useState<Guess[]>([]);
   const [playerIndex, setPlayerIndex] = React.useState<number | undefined>();
   const gameHash = location.pathname.replace("/", "");
   const gameID = parseInt(gameHash, 36);
@@ -33,7 +46,6 @@ export default function Game() {
       newSocket.emit("join", gameHash);
     }
     newSocket.on("startGame", async (socketIndex: number) => {
-      console.log({ START: socketIndex });
       setGameStarted(true);
       setMyTurn(socketIndex === 0);
       setPlayerIndex(socketIndex);
@@ -42,11 +54,15 @@ export default function Game() {
       const newPlayerIndex = 1 - socketIndex;
       setMyTurn(newPlayerIndex === playerIndex);
     });
-    newSocket.on("makeGuess", (index: number, answer: string) => {
-      const newGuesses = [...guesses];
-      newGuesses[index] = answer;
-      _setGuesses(newGuesses);
-    });
+    newSocket.on(
+      "makeGuess",
+      (playerIndex: number, index: number, answer: string) => {
+        setLoading(false);
+        const newGuesses = [...guesses];
+        newGuesses[index] = { answer, playerIndex };
+        _setGuesses(newGuesses);
+      }
+    );
   }, [gameHash, gameID, guesses, playerIndex, socket]);
 
   const startGame = useCallback(() => {
@@ -65,33 +81,48 @@ export default function Game() {
 
   const setGuesses = useCallback(
     (index: number, answer: "Bystander" | "Comrade") => {
-      socket.emit("makeGuess", { gameHash, index, answer });
+      setLoading(true);
+      socket.emit("makeGuess", { gameHash, playerIndex, index, answer });
     },
-    [gameHash, socket]
+    [gameHash, playerIndex, socket]
   );
 
+  if (playerIndex && playerIndex > 1)
+    return (
+      <div>
+        Too many players. <Link to={"/"}>Home</Link>
+      </div>
+    );
   return (
     <div>
-      <Link to={"/"}>Home</Link>
-      <h1>{!myTurn && "NOT"} Your turn</h1>
+      <Header>
+        <Link to={"/"}>Home</Link>
+        {gameStarted && <h1>{!myTurn && "NOT"} Your turn</h1>}
+        {(playerIndex || playerIndex === 0) && (
+          <div>You are player {playerIndex + 1}</div>
+        )}
+        {!gameStarted && <button onClick={startGame}>start game</button>}
 
-      {!gameStarted && <button onClick={startGame}>start game</button>}
-
-      {gameStarted && myTurn && <button onClick={endTurn}>End turn</button>}
-
+        {gameStarted && myTurn && <button onClick={endTurn}>End turn</button>}
+      </Header>
       {(playerIndex || playerIndex === 0) && (
-        <WordGrid
-          id={playerIndex}
-          agents={agents[playerIndex]}
-          endTurn={endTurn}
-          endGame={endGame}
-          gameStarted={gameStarted}
-          guesses={guesses}
-          hiddenAgents={agents[1 - playerIndex]}
-          myTurn={myTurn}
-          setGuesses={setGuesses}
-          words={words}
-        />
+        <>
+          <Spinner loading={loading} />
+          <WordGrid
+            id={playerIndex}
+            agents={agents[playerIndex]}
+            endTurn={endTurn}
+            endGame={endGame}
+            gameStarted={gameStarted}
+            guesses={guesses}
+            hiddenAgents={agents[1 - playerIndex]}
+            myTurn={myTurn}
+            playerIndex={playerIndex}
+            setGuesses={setGuesses}
+            words={words}
+          />
+          <GuideGrid agents={agents[playerIndex]} words={words} />
+        </>
       )}
       {/* <WordGrid
         id={0}

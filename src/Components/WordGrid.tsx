@@ -1,9 +1,10 @@
 import styled from "styled-components";
+import { Guess } from "./Game";
 import Word from "./Word";
 
 const Grid = styled.div`
   display: grid;
-  grid: repeat(5, 50px) / repeat(5, 20%);
+  grid: repeat(5, 80px) / repeat(5, 20%);
   border: 2px solid #333;
   margin: 20px;
   padding: 20px;
@@ -14,8 +15,9 @@ type Props = {
   agents: string[];
   endTurn: () => void;
   endGame: () => void;
-  guesses: string[];
+  guesses: Guess[];
   myTurn: boolean;
+  playerIndex: number;
   setGuesses: (index: number, answer: "Bystander" | "Comrade") => void;
   hiddenAgents: string[];
   gameStarted: boolean;
@@ -30,6 +32,7 @@ export default function WordGrid({
   gameStarted,
   hiddenAgents,
   myTurn,
+  playerIndex,
   setGuesses,
   words,
 }: Props) {
@@ -46,6 +49,7 @@ export default function WordGrid({
           index={index}
           key={index}
           myTurn={myTurn}
+          playerIndex={playerIndex}
           setGuesses={setGuesses}
         >
           {word}
