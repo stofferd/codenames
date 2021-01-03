@@ -29,6 +29,7 @@ const StyledWord = styled.div<{
   align-items: center;
   border: 1px solid #000;
   text-align: center;
+  text-transform: capitalize;
   background: ${(props) =>
     props.guess && props.guess.answer === "Comrade" && `green`};
   background: ${(props) =>
