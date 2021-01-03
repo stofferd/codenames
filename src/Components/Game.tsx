@@ -23,7 +23,7 @@ export default function Game() {
       ? socket
       : io(
           process.env.NODE_ENV === "production"
-            ? "ws://codenames-backend-node.herokuapp.com:3000"
+            ? "wss://codenames-backend-node.herokuapp.com:3000"
             : "ws://localhost:3000"
         );
     if (!socket) {
