@@ -12,14 +12,15 @@ const Grid = styled.div`
 type Props = {
   id: number;
   agents: string[];
+  gameStarted: boolean;
   words: string[];
 };
 
-export default function WordGrid({ agents, words }: Props) {
+export default function WordGrid({ agents, gameStarted, words }: Props) {
   return (
     <Grid>
       {words.map((word: string, index: number) => (
-        <Word agent={agents[index]} key={index}>
+        <Word agent={agents[index]} gameStarted={gameStarted} key={index}>
           {word}
         </Word>
       ))}

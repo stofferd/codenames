@@ -9,7 +9,7 @@ export default function Game() {
   const location = useLocation();
   const [gameStarted, setGameStarted] = React.useState(false);
   const [myTurn, setMyTurn] = React.useState<boolean>(false);
-
+  const [playerIndex, setPlayerIndex] = React.useState<number | undefined>();
   const gameHash = location.pathname.replace("/", "");
   const gameID = parseInt(gameHash, 36);
 
@@ -29,36 +29,15 @@ export default function Game() {
     );
 
     newSocket.on("startGame", async (socketIndex: number) => {
-      console.log();
       setGameStarted(true);
       setMyTurn(socketIndex === 0);
+      setPlayerIndex(socketIndex);
     });
 
     newSocket.emit("join", gameHash);
 
-    // newSocket.on("connection", (connectionARg: string) => {
-    //   console.log("CONNECTED");
-    //   console.log({ connectionARg });
-    // });
-    // newSocket.on("test2", (arg: string) => {
-    //   console.log(arg);
-    // });
-    // newSocket.on("clients", (clients: any) => {
-    //   console.log({ clients });
-    // });
-    // newSocket.on("socketID", (connCount: any) => console.log({ connCount }));
-    newSocket.on("connectionCount", (connCount: any) =>
-      console.log({ connCount })
-    );
-
     setWords(generateWords(25, gameID));
     setAgents(generateAgents());
-
-    // talk to backend to see how many connections there are
-    (async () => {
-      // await newSocket.emit("getSocketID", true);
-      await newSocket.emit("getConnectionCount", true);
-    })();
   }, []);
   const startGame = useCallback(() => {
     if (!socket) return;
@@ -71,8 +50,26 @@ export default function Game() {
       <h1>{!myTurn && "NOT"} Your turn</h1>
 
       {!gameStarted && <button onClick={startGame}>start game</button>}
-      <WordGrid id={0} agents={agents[0]} words={words} />
-      <WordGrid id={1} agents={agents[1]} words={words} />
+      {(playerIndex || playerIndex === 0) && (
+        <WordGrid
+          id={playerIndex}
+          agents={agents[playerIndex]}
+          gameStarted={gameStarted}
+          words={words}
+        />
+      )}
+      <WordGrid
+        id={0}
+        agents={agents[0]}
+        gameStarted={gameStarted}
+        words={words}
+      />
+      <WordGrid
+        id={1}
+        agents={agents[1]}
+        gameStarted={gameStarted}
+        words={words}
+      />
     </div>
   );
 }
