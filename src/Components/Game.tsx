@@ -19,7 +19,13 @@ export default function Game() {
   const [agents, setAgents] = React.useState<string[][]>([]);
 
   useEffect(() => {
-    const newSocket = socket ? socket : io("ws://localhost:3000");
+    const newSocket = socket
+      ? socket
+      : io(
+          process.env.NODE_ENV === "production"
+            ? "ws://codenames-backend-node.herokuapp.com:3000"
+            : "ws://localhost:3000"
+        );
     if (!socket) {
       setSocket(newSocket);
       setWords(generateWords(25, gameID));
